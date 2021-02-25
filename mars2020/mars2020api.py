@@ -2,6 +2,7 @@ import requests as rq
 from dataclasses import dataclass
 import typing as ty
 from PIL import Image
+from pathlib import Path
 
 
 def check_none(dictionary: dict, value: str):
@@ -98,11 +99,14 @@ class ImageData:
 
     @property
     def image_data(self):
-        with open("/tmp/nasa_image_temp.png", "wb") as temp_file:
+        tmp_folder = Path("./tmp")
+        if not tmp_folder.exists():
+            tmp_folder.mkdir()
+        with open(tmp_folder / "nasa_image_temp.png", "wb") as temp_file:
             temp_file.write(
                 rq.get(self.image_url).content
             )
-        return Image.open("/tmp/nasa_image_temp.png")
+        return Image.open(tmp_folder / "nasa_image_temp.png")
 
 
 @dataclass
