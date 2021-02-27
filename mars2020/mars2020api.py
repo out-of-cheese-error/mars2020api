@@ -1,22 +1,26 @@
-import requests as rq
-from dataclasses import dataclass
 import typing as ty
-from PIL import Image
-from pathlib import Path
-from dateutil.parser import parse as date_parser
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
+
+import requests as rq
+from PIL import Image
+from dateutil.parser import parse as date_parser
+
 
 def check_none(dictionary: dict, value: str):
     if value not in dictionary:
         return None
     return None if dictionary[value] == "UNK" else str(dictionary[value])
 
+
 def check_date(dictionary: dict, value: str):
     date_string = check_none(dictionary, value)
     if date_string is not None:
         return date_parser(date_string)
     return None
+
 
 @dataclass
 class ExtendedInfo:
@@ -78,6 +82,13 @@ class InstrumentIdentifier(Enum):
 
 
 @dataclass
+class SpacecraftClockTime:
+    primary_timestamp: str
+    secondary_timestamp: str
+    tertiary_timestamp: str
+
+
+@dataclass
 class MastcamMeta:
     instrument_identifier: InstrumentIdentifier
     filter_number: str
@@ -93,7 +104,6 @@ class MastcamMeta:
     producer: chr
     version: str
     filetype: str
-
 
 
 @dataclass
