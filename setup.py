@@ -5,4 +5,4 @@ setup(name='mars2020',
       description='An unofficial api',
       author='out-of-cheese-error',
       packages=['mars2020'],
-      install_requires=["numpy", "requests", "PIL"])
+      install_requires=["numpy", "requests", "pillow"])
