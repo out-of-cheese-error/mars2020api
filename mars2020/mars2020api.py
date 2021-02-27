@@ -137,10 +137,7 @@ class InstrumentMeta:
         version = image_code[-2:]
         product_type_identifier = product_code[-3:]
 
-        if code[0] == "T":
-            thumbnail = True
-        else:
-            thumbnail = False
+        thumbnail = code[0] == "T"
         site_location = code[1 : 1 + 3]
         site_location_drive_position = code[4 : 4 + 4]
         sequence_id = (code[8 : 8 + 4], code[8 + 4 : 8 + 4 + 5])
