@@ -15,23 +15,28 @@ def check_none(dictionary: dict, value: str):
 class ExtendedInfo:
     mast_az: ty.Union[None, str]
     mast_el: ty.Union[None, str]
-    sclk: ty.Union[None, str]
     scale_factor: ty.Union[None, float]
-    xyz: ty.Union[None, str]
-    subframe_rect: ty.Union[None, str]
+    xyz: ty.Union[None, ty.Tuple[float, float, float]]
+    subframe_rect: ty.Union[None, ty.Tuple[int, int, int, int]]
     dimension: ty.Union[None, ty.Tuple[int, int]]
 
     @classmethod
     def from_extended_info_dict(cls, extended_info: dict):
         mast_az = check_none(extended_info, "mastAz")
         mast_el = check_none(extended_info, "mastEl")
-        sclk = check_none(extended_info, "sclk")
-        scale_factor = float(check_none(extended_info, "scaleFactor"))
+        scale_factor = check_none(extended_info, "scaleFactor")
+        if scale_factor is not None:
+            scale_factor = float(scale_factor)
         xyz = check_none(extended_info, "xyz")
+        if xyz is not None:
+            xyz = tuple(map(float, xyz[1:-1].split(",")))
         subframe_rect = check_none(extended_info, "subframeRect")
-        x, y = extended_info["dimension"].split(",")
-        dimension = (int(x[1:]), int(y[:-1]))
-        return cls(mast_az, mast_el, sclk, scale_factor, xyz, subframe_rect, dimension)
+        if subframe_rect is not None:
+            subframe_rect = tuple(map(int, subframe_rect[1:-1].split(",")))
+        dimension = check_none(extended_info, "dimension")
+        if dimension is not None:
+            dimension = tuple(map(int, dimension[1:-1].split(",")))
+        return cls(mast_az, mast_el, scale_factor, xyz, subframe_rect, dimension)
 
 
 @dataclass
