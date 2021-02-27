@@ -3,13 +3,20 @@ from dataclasses import dataclass
 import typing as ty
 from PIL import Image
 from pathlib import Path
-
+from dateutil.parser import parse as date_parser
+from datetime import datetime
+from enum import Enum
 
 def check_none(dictionary: dict, value: str):
     if value not in dictionary:
         return None
     return None if dictionary[value] == "UNK" else str(dictionary[value])
 
+def check_date(dictionary: dict, value: str):
+    date_string = check_none(dictionary, value)
+    if date_string is not None:
+        return date_parser(date_string)
+    return None
 
 @dataclass
 class ExtendedInfo:
@@ -64,6 +71,31 @@ class Camera:
                    camera_model_type=camera_model_type)
 
 
+class InstrumentIdentifier(Enum):
+    ZL = "Mastcam-Z left"
+    ZR = "Mastcam-Z right"
+    Other = "other"
+
+
+@dataclass
+class MastcamMeta:
+    instrument_identifier: InstrumentIdentifier
+    filter_number: str
+    sol: int
+    spacecraft_clock_time: str
+    spacecraft_clock_time_miliseconds: str
+    site_location: str
+    site_location_drive_position: str
+    sequence_id: str
+    focal_length: int
+    downsampling: int
+    jpeg_quality: str
+    producer: chr
+    version: str
+    filetype: str
+
+
+
 @dataclass
 class ImageData:
     camera_type: Camera
@@ -76,9 +108,9 @@ class ImageData:
     image_id: str
     sol: ty.Union[None, int]
     sample_type: ty.Union[None, str]
-    mars_date: ty.Union[None, str]
-    earth_date_utc: ty.Union[None, str]
-    date_received_on_earth_utc: ty.Union[None, str]
+    mars_date: ty.Union[None, datetime]
+    earth_date_utc: ty.Union[None, datetime]
+    date_received_on_earth_utc: ty.Union[None, datetime]
 
     @classmethod
     def from_image_dictionary(cls, image_dictionary: dict):
@@ -91,9 +123,9 @@ class ImageData:
         image_id = image_dictionary["imageid"]
         attitude = check_none(image_dictionary, "attitude")
         sol = int(check_none(image_dictionary, "sol"))
-        mars_date = check_none(image_dictionary, "date_taken_mars")
-        earth_date = check_none(image_dictionary, "date_taken_utc")
-        date_received_on_earth_utc = check_none(image_dictionary, "date_received")
+        mars_date = check_date(image_dictionary, "date_taken_mars")
+        earth_date = check_date(image_dictionary, "date_taken_utc")
+        date_received_on_earth_utc = check_date(image_dictionary, "date_received")
         sample_type = check_none(image_dictionary, "sample_type")
         return cls(camera_type=camera, image_url=image_url,
                    attitude=attitude, dimension=dimension, caption=caption,
