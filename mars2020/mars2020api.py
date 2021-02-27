@@ -80,35 +80,78 @@ class InstrumentIdentifier(Enum):
     ZR = "Mastcam-Z right"
     Other = "other"
 
+    @classmethod
+    def get_identifier(cls, code: str):
+        assert len(code) == 2
+        if code == "ZL":
+            return cls.ZL
+        elif code == "ZR":
+            return cls.ZR
+        else:
+            return cls.Other
+
 
 @dataclass
 class SpacecraftClockTime:
-    primary_timestamp: str
-    secondary_timestamp: str
-    tertiary_timestamp: str
-
-
-@dataclass
-class MastcamMeta:
-    instrument_identifier: InstrumentIdentifier
-    filter_number: str
     sol: int
     spacecraft_clock_time: str
     spacecraft_clock_time_miliseconds: str
+
+    @classmethod
+    def from_time_field(cls, time_code: str, product_code):
+        assert len(time_code) == 14 and len(product_code) == 6
+        return cls(int(time_code[:4]),
+                   time_code[4:],
+                   product_code[:3])
+
+@dataclass
+class VehicleLocation:
     site_location: str
     site_location_drive_position: str
-    sequence_id: str
+
+@dataclass
+class InstrumentMeta:
+    instrument_identifier: InstrumentIdentifier
+    spacecraft_time: SpacecraftClockTime
+    filter_number: str
+    vehicle_location: VehicleLocation
+    sequence_id: ty.Tuple[str, str]
+    product_type_identifier: str
     focal_length: int
-    downsampling: int
+    downsampling_factor: int
     jpeg_quality: str
     producer: chr
     version: str
-    filetype: str
+
+    @classmethod
+    def from_image_id(cls, image_id: str):
+        instrument_code, time_code, product_code, \
+        location_code, alternative_instrument_code,\
+        image_code = image_id.split("_")
+        instrument_identifier = InstrumentIdentifier.get_identifier(instrument_code[:2])
+        spacecraft_time = SpacecraftClockTime.from_time_field(time_code, product_code)
+        filter_number = instrument_code[-1]
+        focal_length = int(image_code[:3])
+        downsampling_factor = int(2**int(image_code[3]))
+        jpeg_quality = image_code[4:6]
+        producer = image_code[6]
+        version = image_code[-2:]
+        product_type_identifier = product_code[-3:]
+        site_location = location_code[1:4]
+        site_location_drive_position = location_code[4:8]
+        sequence_id = (location_code[-3:], alternative_instrument_code)
+        return cls(instrument_identifier=instrument_identifier, spacecraft_time=spacecraft_time,
+                   filter_number=filter_number,
+                   vehicle_location=VehicleLocation(site_location, site_location_drive_position),
+                   sequence_id=sequence_id, product_type_identifier=product_type_identifier,
+                   focal_length=focal_length, downsampling_factor=downsampling_factor,
+                   jpeg_quality=jpeg_quality, producer=producer, version=version)
 
 
 @dataclass
 class ImageData:
     camera_type: Camera
+    instrument_metadata: InstrumentMeta
     extended_info: ExtendedInfo
     image_url: str
     attitude: ty.Union[None, ty.Tuple[float, float, float, float]]
@@ -137,12 +180,13 @@ class ImageData:
         earth_date = check_date(image_dictionary, "date_taken_utc")
         date_received_on_earth_utc = check_date(image_dictionary, "date_received")
         sample_type = check_none(image_dictionary, "sample_type")
+        instrument_metadata = InstrumentMeta.from_image_id(image_id)
         return cls(camera_type=camera, image_url=image_url,
                    attitude=attitude, dimension=dimension, caption=caption,
                    title=title, image_id=image_id, sol=sol, mars_date=mars_date,
                    earth_date_utc=earth_date, extended_info=extended_info,
                    date_received_on_earth_utc=date_received_on_earth_utc,
-                   sample_type=sample_type)
+                   sample_type=sample_type, instrument_metadata=instrument_metadata)
 
     @property
     def image_data(self):
