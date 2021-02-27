@@ -52,9 +52,9 @@ class ExtendedInfo:
 @dataclass
 class Camera:
     filter_name: ty.Union[None, str]
-    camera_vector: ty.Union[None, str]
+    camera_vector: ty.Union[None, ty.Tuple[float, float, float]]
     camera_model_component_list: ty.Union[None, ty.List[str]]
-    camera_position: ty.Union[None, str]
+    camera_position: ty.Union[None, ty.Tuple[float, float, float]]
     instrument: ty.Union[None, str]
     camera_model_type: ty.Union[None, str]
 
@@ -62,10 +62,16 @@ class Camera:
     def from_camera_dictionary(cls, camera_dictionary: dict):
         filter_name = check_none(camera_dictionary, "filter_name")
         camera_vector = check_none(camera_dictionary, "camera_vector")
+        if camera_vector is not None:
+            camera_vector = tuple(map(float, camera_vector[1:-1].split(",")))
         camera_model_component_list = check_none(
             camera_dictionary, "camera_model_component_list"
         )
+        if camera_model_component_list is not None:
+            camera_model_component_list = list(camera_model_component_list.split(";"))
         camera_position = check_none(camera_dictionary, "camera_position")
+        if camera_position is not None:
+            camera_position = tuple(map(float, camera_position[1:-1].split(",")))
         instrument = check_none(camera_dictionary, "instrument")
         camera_model_type = check_none(camera_dictionary, "camera_model_type")
         return cls(
@@ -122,7 +128,7 @@ class InstrumentMeta:
         index = 0
         codes = []
         for length in lengths:
-            codes.append(image_id[index : index + length])
+            codes.append(image_id[index: index + length])
             index += length + 1
         (instrument_code, sol_code, time_code, product_code, code, image_code,) = codes
         instrument_identifier = instrument_code[:2]
@@ -138,9 +144,9 @@ class InstrumentMeta:
         product_type_identifier = product_code[-3:]
 
         thumbnail = code[0] == "T"
-        site_location = code[1 : 1 + 3]
-        site_location_drive_position = code[4 : 4 + 4]
-        sequence_id = (code[8 : 8 + 4], code[8 + 4 : 8 + 4 + 5])
+        site_location = code[1: 1 + 3]
+        site_location_drive_position = code[4: 4 + 4]
+        sequence_id = (code[8: 8 + 4], code[8 + 4: 8 + 4 + 5])
         return cls(
             instrument_identifier=instrument_identifier,
             spacecraft_time=spacecraft_time,
@@ -248,7 +254,7 @@ class ImageDataCollection:
 
     @classmethod
     def fetch_partial_mars2020_imagedata(
-        cls, number_of_images: int, page_number: int
+            cls, number_of_images: int, page_number: int
     ) -> "ImageDataCollection":
         json_data = rq.get(
             f"https://mars.nasa.gov/rss/api/?feed=raw_images&category=mars2020&feedtype=json&num={number_of_images}&page={page_number}"
