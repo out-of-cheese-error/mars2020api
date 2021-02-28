@@ -91,27 +91,6 @@ images = [
 len(images)
 ```
 
-```python
-display_image_grid(images[:6])
-```
-
-The `camera_position` and `camera_vector` fields show how the panorama was shot.
-
-```python
-positions = np.array([x.camera_type.camera_position for x in images])
-vectors = np.array([x.camera_type.camera_vector for x in images])
-
-fig = plt.figure(figsize=(12,12))
-ax = fig.gca(projection='3d')
-ax.quiver(-positions[:, 0], -positions[:, 1], -positions[:, 2], 
-          -vectors[:, 0], -vectors[:, 1], -vectors[:, 2], 
-          length=0.01, linewidth=0.8, 
-          arrow_length_ratio = 0.5, 
-          color="#8959a8")
-plt.axis("off")
-plt.show()
-```
-
 Here are some results from Photomerge!
 
 ![panorama_spherical](./images/panorama_MCZ_LEFT_spherical.jpg)
@@ -157,4 +136,4 @@ An example of what that looks like:
 
 See the rest, as well as high-res versions of all of the above in [this Flickr album](https://flic.kr/s/aHsmUybm5N)
 
-
+Visit our [blog post](https://out-of-cheese-error.netlify.app/perseverance) for more details .
