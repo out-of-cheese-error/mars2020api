@@ -128,7 +128,7 @@ class InstrumentMeta:
         index = 0
         codes = []
         for length in lengths:
-            codes.append(image_id[index: index + length])
+            codes.append(image_id[index : index + length])
             index += length + 1
         (instrument_code, sol_code, time_code, product_code, code, image_code,) = codes
         instrument_identifier = instrument_code[:2]
@@ -144,9 +144,9 @@ class InstrumentMeta:
         product_type_identifier = product_code[-3:]
 
         thumbnail = code[0] == "T"
-        site_location = code[1: 1 + 3]
-        site_location_drive_position = code[4: 4 + 4]
-        sequence_id = (code[8: 8 + 4], code[8 + 4: 8 + 4 + 5])
+        site_location = code[1 : 1 + 3]
+        site_location_drive_position = code[4 : 4 + 4]
+        sequence_id = (code[8 : 8 + 4], code[8 + 4 : 8 + 4 + 5])
         return cls(
             instrument_identifier=instrument_identifier,
             spacecraft_time=spacecraft_time,
@@ -254,7 +254,7 @@ class ImageDataCollection:
 
     @classmethod
     def fetch_partial_mars2020_imagedata(
-            cls, number_of_images: int, page_number: int
+        cls, number_of_images: int, page_number: int
     ) -> "ImageDataCollection":
         json_data = rq.get(
             f"https://mars.nasa.gov/rss/api/?feed=raw_images&category=mars2020&feedtype=json&num={number_of_images}&page={page_number}"
