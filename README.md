@@ -17,22 +17,8 @@ Some imports and a helper function to plot a grid of images:
 ```python
 import PIL
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import axes3d
 
 from mars2020 import mars2020api
-
-def display_image_grid(images: [mars2020api.ImageData], columns=3, width=15, height=8, max_images=30):
-    if len(images) > max_images:
-        print(f"Showing {max_images} of {len(images)} images")
-        images = images[:max_images]
-    height = max(height, int(len(images) / columns) * height)
-    plt.figure(figsize=(width, height))
-    for i, image in enumerate(images):
-        plt.subplot(int(len(images) // columns + 1), columns, i + 1)
-        plt.imshow(image.image_data)
-        plt.axis("off")
-    plt.show()
 ```
 
 Fetch all of NASA's Mars data (this just gets all the image metadata, the actual images are downloaded lazily when requested)
@@ -52,14 +38,8 @@ images = [
     and not x.instrument_metadata.thumbnail # Not a thumbnail pic
     and x.instrument_metadata.filter_number == "E"
 ]
-len(images)
 ```
 
-```python
-display_image_grid(images[:6])
-```
-
-<!-- #region -->
 We used Photoshop's Photomerge algorithm (had to subsample to a 100 images to keep Photoshop from crashing) to get this absolute beauty:
 
 ![collage EDL_RDCAM Filter E](./images/collage_EDL_RDCAM_E.png)
@@ -72,12 +52,10 @@ And similarly for `filter_number = F`:
 
 ## Panorama
 
-<!-- #region -->
 NASA released a beautiful [360-degree panorama](https://mars.nasa.gov/resources/25640/mastcam-zs-first-360-degree-panorama/) shot by the Mastcam-Z cameras on board. We tried to replicate this by getting the same images and running it through Photomerge again.
 
 
 [NASA's claims to have used](https://www.nasa.gov/offices/oct/home/tech_life_gigapan.html) the [GigaPan software](http://gigapan.com/) for this but we couldn't really get this to work probably because of the ordering of the images.
-<!-- #endregion -->
 
 ```python
 images = [
@@ -88,7 +66,6 @@ images = [
         and x.instrument_metadata.filter_number == "F"
         and x.date_received_on_earth_utc.day == 24 # Received on 24th Feb 2021
     ]
-len(images)
 ```
 
 Here are some results from Photomerge!
@@ -126,7 +103,13 @@ for cam_type in all_data.instrument_names:
         g_images = [x for x in cam_images if x.instrument_metadata.filter_number == "G"]
         b_images = [x for x in cam_images if x.instrument_metadata.filter_number == "B"]
         rgb_matches += [match_rgb(r_image, g_images, b_images) for r_image in r_images]
-len(rgb_matches)
+
+rgb_images = []
+for m in rgb_matches:
+    rgb_image = np.zeros((m[0].dimension[1], m[0].dimension[0], 3), dtype=np.int8)
+    for i in range(3):
+        rgb_image[:, :, i] = np.asarray(m[i].image_data.split()[i])
+    rgb_images.append(PIL.Image.fromarray(rgb_image, "RGB"))
 ```
 
 An example of what that looks like:
