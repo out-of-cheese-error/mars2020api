@@ -19,7 +19,7 @@ def demosaic_image(pil_image: Image, pattern='RGGB'):
         *RGB* colourspace array.
     """
     image: np.ndarray = np.array(pil_image, dtype=np.float64).mean(axis=2)
-    image /= np.max(image)
+    image /= 255.
     
     pattern = pattern.upper()
 
