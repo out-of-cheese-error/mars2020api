@@ -56,7 +56,6 @@ def get_image_clusters(image_collection: ty.Union[mapi.ImageDataCollection, ty.L
         images = image_collection
     clusters: ty.Dict[str, ty.List[mapi.ImageData]] = {}
     for image in images:
-        # print(image.image_id.split("_"))
         if len(image.image_id.split("_")[-1]) == 4:
             common_id: str = "_".join(image.image_id.split("_")[:-3])
             if common_id not in clusters:
