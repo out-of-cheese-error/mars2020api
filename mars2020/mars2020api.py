@@ -2,7 +2,7 @@ import typing as ty
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-
+from enum import Enum
 import requests as rq
 from PIL import Image
 from dateutil.parser import parse as date_parser
