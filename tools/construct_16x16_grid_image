@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import fire
+from mars2020 import mars2020api as mapi
+from mars2020 import image_processing as imp
+import typing as ty
+from pathlib import Path
+
+
+def main(sol: ty.Union[None, int] = None, output_directory: str = "grid_output"):
+    image_data: mapi.ImageDataCollection = mapi.ImageDataCollection.fetch_all_mars2020_imagedata()
+    if sol is not None:
+        images = [x for x in image_data.images if not x.instrument_metadata.thumbnail and x.sol == sol]
+    else:
+        images = [x for x in image_data.images if not x.instrument_metadata.thumbnail]
+    image_clusters = imp.get_image_clusters(images)
+    if len(image_clusters):
+        print(len(image_clusters), "images clusters were found")
+    else:
+        print("No image clusters were found")
+    output_directory = Path(output_directory)
+    if not output_directory.exists():
+        output_directory.mkdir()
+    for i, cluster in enumerate(image_clusters):
+        print(f"processing cluster {i+1}...")
+        imp.grid_from_4x4_imageset(cluster) \
+            .save(output_directory / f"{cluster[0].image_id[:-8]}.png", format="PNG")
+        print(f"saved cluster {i + 1} to {output_directory.as_posix()}")
+
+
+if __name__ == "__main__":
+    fire.Fire(main)
