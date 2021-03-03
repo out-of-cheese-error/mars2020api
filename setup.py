@@ -6,4 +6,4 @@ setup(name='mars2020',
       author='out-of-cheese-error',
       scripts=["tools/construct_16x16_grid_image"],
       packages=['mars2020'],
-      install_requires=["numpy", "requests", "pillow", "scipy"])
+      install_requires=["numpy", "requests", "pillow", "scipy", "fire"])
