@@ -226,6 +226,9 @@ class ImageData:
             tmp_folder.mkdir()
         with open(tmp_folder / "nasa_image_temp.png", "wb") as temp_file:
             temp_file.write(rq.get(self.image_url).content)
+        if self.instrument_metadata.filter_number == "E":
+            from mars2020.image_processing import demosaic_image
+            return demosaic_image(Image.open(tmp_folder / "nasa_image_temp.png"))
         return Image.open(tmp_folder / "nasa_image_temp.png")
 
 
