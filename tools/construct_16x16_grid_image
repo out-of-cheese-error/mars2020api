@@ -5,9 +5,18 @@ from mars2020 import mars2020api as mapi
 from mars2020 import image_processing as imp
 import typing as ty
 from pathlib import Path
+import fire
 
 
-def main(sol: ty.Union[None, int] = None, output_directory: str = "grid_output"):
+@fire.Fire
+def flatten_layers(sol: ty.Union[None, int] = None, output_directory: str = "grid_output"):
+    """
+    Retrieves raw images from mars2020 api and constructs high-res image by
+    applying debayering and placing images into a 4x4 grid.
+    :param sol: Sol number. Do not provide any arguments if you want all sols.
+    :param output_directory: Saves images into the given directory. default is grid_output/
+    :return:
+    """
     image_data: mapi.ImageDataCollection = mapi.ImageDataCollection.fetch_all_mars2020_imagedata()
     if sol is not None:
         images = [x for x in image_data.images if not x.instrument_metadata.thumbnail and x.sol == sol]
@@ -22,11 +31,11 @@ def main(sol: ty.Union[None, int] = None, output_directory: str = "grid_output")
     if not output_directory.exists():
         output_directory.mkdir()
     for i, cluster in enumerate(image_clusters):
-        print(f"processing cluster {i+1}...")
+        print(f"processing cluster {i + 1}...")
         imp.grid_from_4x4_imageset(cluster) \
             .save(output_directory / f"{cluster[0].image_id[:-8]}.png", format="PNG")
         print(f"saved cluster {i + 1} to {output_directory.as_posix()}")
 
 
 if __name__ == "__main__":
-    fire.Fire(main)
+    flatten_layers()

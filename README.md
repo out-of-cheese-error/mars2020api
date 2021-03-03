@@ -1,4 +1,4 @@
-# Perseverance Rover Image API
+# Perseverance Rover Image API (with a touch of image processing)
 
 Python API for downloading [NASA's Perseverance Rover](https://mars.nasa.gov) images and metadata.
 

@@ -80,3 +80,22 @@ def grid_from_4x4_imageset(images: ty.List[mapi.ImageData]) -> Image:
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[:d1, :d2]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
     return Image.fromarray(grid_image)
+
+
+def grid_from_4x4_imageset_with_layers(images: ty.List[mapi.ImageData]) -> ty.List[Image]:
+    assert len(images) == 16
+    for im in images:
+        im.order = int(im.image_id.split("_")[-2])
+    images = sorted(images, key=lambda x: x.order)
+    image_frames = [np.array(x.image_data) for x in images]
+    d1 = min(x.shape[0] for x in image_frames)
+    d2 = min(x.shape[1] for x in image_frames)
+    layers: ty.List[Image] = list()
+    for i in range(4):
+        for j in range(4):
+            grid_image = np.zeros((d1 * 4, d2 * 4, 4), dtype="uint8")
+            current = image_frames[i * 4 + j]
+            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[:d1, :d2]
+            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
+            layers.append(Image.fromarray(grid_image))
+    return layers
