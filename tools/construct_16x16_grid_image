@@ -13,15 +13,28 @@ class Parameters:
     sol: ty.Union[None, int] = None
     output_directory: str = "grid_output"
     save_as_layers: bool = False
+    camera: ty.Union[None, str] = None
+    grid_size: int = 16
 
 
-def save_clusters(parameters: Parameters):
-    image_data: mapi.ImageDataCollection = mapi.ImageDataCollection.fetch_all_mars2020_imagedata()
-    if parameters.sol is not None:
-        images = [x for x in image_data.images if not x.instrument_metadata.thumbnail and x.sol == parameters.sol]
-    else:
-        images = [x for x in image_data.images if not x.instrument_metadata.thumbnail]
-    image_clusters = imp.get_image_clusters(images)
+def save_clusters(image_data: mapi.ImageDataCollection, parameters: Parameters):
+    images: ty.List[mapi.ImageData] = list()
+    for image in image_data.images:
+        if image.instrument_metadata.thumbnail != "T":
+            if (parameters.sol is None
+                    and parameters.camera is None):
+                images.append(image)
+            elif (
+                parameters.sol is None
+                and image.camera_type.instrument == parameters.camera
+            ):
+                images.append(image)
+            elif (
+                parameters.camera is None
+                and image.sol == parameters.sol
+            ):
+                images.append(image)
+    image_clusters = imp.get_image_clusters(images, cluster_length=parameters.grid_size)
     if len(image_clusters):
         pg.Print(len(image_clusters), "images clusters were found")
     else:
@@ -44,9 +57,16 @@ def save_clusters(parameters: Parameters):
 
 
 def main_gui():
+    pg.Print("Loading data from internets..")
+    image_data: mapi.ImageDataCollection = mapi.ImageDataCollection.fetch_all_mars2020_imagedata()
+    sols = ["all"] + list({x.sol for x in image_data.images})
+    grid_size = [str(x**2) for x in range(1, 5)]
+    cameras = ["all"] + list({x.camera_type.instrument for x in image_data.images})
     params = Parameters()
     layers = [[pg.Text("Choose output folder"), pg.FolderBrowse(button_text="Browse", key="output_path")],
-              [pg.Text("Sol num."), pg.InputText(key="sol", default_text=None)],
+              [pg.Text("Grid size"), pg.DropDown(values=grid_size, key="grid_size")],
+              [pg.Text("Sol num."), pg.DropDown(values=sols, key="sol", default_value="all")],
+              [pg.Text("Camera ID"), pg.DropDown(values=cameras, key="camera", default_value="all")],
               [pg.Checkbox("Save as separate layers", key="layers")],
               [pg.OK("OK"), pg.Cancel("Cancel")]]
     window = pg.Window("Perseverance rover image grid constructor", layers)
@@ -56,10 +76,12 @@ def main_gui():
             break
         elif event == "OK":
             pg.Print("Processing images. This can take a few minutes")
-            params.sol = None if values["sol"] is None else int(values["sol"])
+            params.sol = None if values["sol"] is "all" else int(values["sol"])
             params.output_directory = values["output_path"]
             params.save_as_layers = values["layers"]
-            save_clusters(params)
+            params.camera = None if values["camera"] is "all" else values["camera"]
+            params.grid_size = int(values["grid_size"])
+            save_clusters(image_data, params)
     window.close()
 
 

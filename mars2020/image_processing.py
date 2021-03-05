@@ -57,7 +57,7 @@ def get_image_clusters(image_collection: ty.Union[mapi.ImageDataCollection, ty.L
     clusters: ty.Dict[str, ty.List[mapi.ImageData]] = {}
     for image in images:
         if len(image.image_id.split("_")[-1]) == 4:
-            common_id: str = "_".join(image.image_id.split("_")[:-3])
+            common_id: str = "_".join(image.image_id.split("_")[:-2])
             if common_id not in clusters:
                 clusters[common_id] = [image]
             else:
@@ -66,24 +66,23 @@ def get_image_clusters(image_collection: ty.Union[mapi.ImageDataCollection, ty.L
 
 
 def grid_from_4x4_imageset(images: ty.List[mapi.ImageData]) -> Image:
-    assert len(images) == 16
     for im in images:
         im.order = int(im.image_id.split("_")[-2])
     images = sorted(images, key=lambda x: x.order)
     image_frames = [np.array(x.image_data) for x in images]
     d1 = min(x.shape[0] for x in image_frames)
     d2 = min(x.shape[1] for x in image_frames)
-    grid_image = np.zeros((d1 * 4, d2 * 4, 4), dtype="uint8")
-    for i in range(4):
-        for j in range(4):
-            current = image_frames[i * 4 + j]
+    size = int(np.sqrt(len(images)))
+    grid_image = np.zeros((d1 * size, d2 * size, 4), dtype="uint8")
+    for i in range(size):
+        for j in range(size):
+            current = image_frames[i * size + j]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[:d1, :d2]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
     return Image.fromarray(grid_image)
 
 
 def grid_from_4x4_imageset_with_layers(images: ty.List[mapi.ImageData]):
-    assert len(images) == 16
     for im in images:
         im.order = int(im.image_id.split("_")[-2])
     images = sorted(images, key=lambda x: x.order)
@@ -91,10 +90,11 @@ def grid_from_4x4_imageset_with_layers(images: ty.List[mapi.ImageData]):
     d1 = min(x.shape[0] for x in image_frames)
     d2 = min(x.shape[1] for x in image_frames)
     layers = []
-    for i in range(4):
-        for j in range(4):
-            grid_image = np.zeros((d1 * 4, d2 * 4, 4), dtype="uint8")
-            current = image_frames[i * 4 + j]
+    size = int(np.sqrt(len(images)))
+    for i in range(size):
+        for j in range(size):
+            grid_image = np.zeros((d1 * size, d2 * size, 4), dtype="uint8")
+            current = image_frames[i * size + j]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[:d1, :d2]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
             layers.append(Image.fromarray(grid_image))
