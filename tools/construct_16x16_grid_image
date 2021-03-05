@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 
-import fire
 from mars2020 import mars2020api as mapi
 from mars2020 import image_processing as imp
 import typing as ty
 from pathlib import Path
-import fire
+from dataclasses import dataclass
+import PySimpleGUI as pg
 
 
-@fire.Fire
-def flatten_layers(sol: ty.Union[None, int] = None, output_directory: str = "grid_output"):
-    """
-    Retrieves raw images from mars2020 api and constructs high-res image by
-    applying debayering and placing images into a 4x4 grid.
-    :param sol: Sol number. Do not provide any arguments if you want all sols.
-    :param output_directory: Saves images into the given directory. default is grid_output/
-    :return:
-    """
+@dataclass
+class Parameters:
+    sol: ty.Union[None, int] = None
+    output_directory: str = "grid_output"
+    save_as_layers: bool = False
+
+
+def save_clusters(parameters: Parameters):
+    sol, output_directory, image_layers = parameters.sol, parameters.output_directory, parameters.save_as_layers
     image_data: mapi.ImageDataCollection = mapi.ImageDataCollection.fetch_all_mars2020_imagedata()
     if sol is not None:
         images = [x for x in image_data.images if not x.instrument_metadata.thumbnail and x.sol == sol]
@@ -24,18 +24,44 @@ def flatten_layers(sol: ty.Union[None, int] = None, output_directory: str = "gri
         images = [x for x in image_data.images if not x.instrument_metadata.thumbnail]
     image_clusters = imp.get_image_clusters(images)
     if len(image_clusters):
-        print(len(image_clusters), "images clusters were found")
+        pg.Print(len(image_clusters), "images clusters were found")
     else:
-        print("No image clusters were found")
+        pg.Print("No image clusters were found")
     output_directory = Path(output_directory)
     if not output_directory.exists():
         output_directory.mkdir()
     for i, cluster in enumerate(image_clusters):
-        print(f"processing cluster {i + 1}...")
-        imp.grid_from_4x4_imageset(cluster) \
-            .save(output_directory / f"{cluster[0].image_id[:-8]}.png", format="PNG")
-        print(f"saved cluster {i + 1} to {output_directory.as_posix()}")
+        if not image_layers:
+            pg.Print(f"processing cluster {i + 1}...")
+            imp.grid_from_4x4_imageset(cluster) \
+                .save(output_directory / f"{cluster[0].image_id[:-8]}.png", format="PNG")
+        else:
+            for layer_id, layer in enumerate(imp.grid_from_4x4_imageset_with_layers(cluster)):
+                layer_path = Path(output_directory / cluster[0].image_id[:-8])
+                if not layer_path.exists():
+                    layer_path.mkdir()
+                layer.save(layer_path / f"layer-{layer_id}.png", format="PNG")
+        pg.Print(f"saved cluster {i + 1} to {output_directory.as_posix()}")
 
 
 if __name__ == "__main__":
-    flatten_layers()
+    params = Parameters()
+    layers = [[pg.Text("Choose output folder"), pg.FolderBrowse(button_text="Browse", key="output_path")],
+              [pg.Text("Sol num."), pg.InputText(key="sol", default_text=None)],
+              [pg.Checkbox("Save as separate layers", key="layers")],
+              [pg.OK("OK"), pg.Cancel("Cancel")]]
+    window = pg.Window("Perseverance rover image grid constructor", layers)
+    while True:
+        event, values = window.read()
+        if event == pg.WIN_CLOSED or event == 'Cancel':
+            break
+        elif event == "OK":
+            pg.Print("Processing images. This can take a few minutes")
+            params.sol = None if values["sol"] is None else int(values["sol"])
+            params.output_directory = values["output_path"]
+            params.save_as_layers = values["layers"]
+            save_clusters(params)
+        else:
+            pass
+    window.close()
+
