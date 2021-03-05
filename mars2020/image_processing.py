@@ -65,7 +65,7 @@ def get_image_clusters(image_collection: ty.Union[mapi.ImageDataCollection, ty.L
     return [list(v) for k, v in clusters.items() if len(v) == cluster_length]
 
 
-def grid_from_4x4_imageset(images: ty.List[mapi.ImageData]) -> Image:
+def grid_from_imageset(images: ty.List[mapi.ImageData]) -> Image:
     for im in images:
         im.order = int(im.image_id.split("_")[-2])
     images = sorted(images, key=lambda x: x.order)
@@ -82,7 +82,7 @@ def grid_from_4x4_imageset(images: ty.List[mapi.ImageData]) -> Image:
     return Image.fromarray(grid_image)
 
 
-def grid_from_4x4_imageset_with_layers(images: ty.List[mapi.ImageData]):
+def grid_from_imageset_with_layers(images: ty.List[mapi.ImageData]):
     for im in images:
         im.order = int(im.image_id.split("_")[-2])
     images = sorted(images, key=lambda x: x.order)

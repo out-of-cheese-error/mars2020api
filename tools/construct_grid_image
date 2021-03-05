@@ -45,10 +45,10 @@ def save_clusters(image_data: mapi.ImageDataCollection, parameters: Parameters):
     for i, cluster in enumerate(image_clusters):
         if not parameters.save_as_layers:
             pg.Print(f"processing cluster {i + 1}...")
-            imp.grid_from_4x4_imageset(cluster) \
+            imp.grid_from_imageset(cluster) \
                 .save(output_directory / f"{cluster[0].image_id[:-8]}.png", format="PNG")
         else:
-            for layer_id, layer in enumerate(imp.grid_from_4x4_imageset_with_layers(cluster)):
+            for layer_id, layer in enumerate(imp.grid_from_imageset_with_layers(cluster)):
                 layer_path = Path(output_directory / cluster[0].image_id[:-8])
                 if not layer_path.exists():
                     layer_path.mkdir()
