@@ -7,6 +7,9 @@ import typing as ty
 
 def demosaic_image(pil_image: Image, pattern="RGGB"):
     """
+    Adapted from https://github.com/colour-science/colour-demosaicing/blob/develop/colour_demosaicing/bayer/demosaicing/bilinear.py
+
+
     Returns the demosaiced *RGB* colourspace array from given *Bayer* CFA using
     bilinear interpolation.
     Parameters
