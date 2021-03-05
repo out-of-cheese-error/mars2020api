@@ -16,10 +16,9 @@ class Parameters:
 
 
 def save_clusters(parameters: Parameters):
-    sol, output_directory, image_layers = parameters.sol, parameters.output_directory, parameters.save_as_layers
     image_data: mapi.ImageDataCollection = mapi.ImageDataCollection.fetch_all_mars2020_imagedata()
-    if sol is not None:
-        images = [x for x in image_data.images if not x.instrument_metadata.thumbnail and x.sol == sol]
+    if parameters.sol is not None:
+        images = [x for x in image_data.images if not x.instrument_metadata.thumbnail and x.sol == parameters.sol]
     else:
         images = [x for x in image_data.images if not x.instrument_metadata.thumbnail]
     image_clusters = imp.get_image_clusters(images)
@@ -27,11 +26,11 @@ def save_clusters(parameters: Parameters):
         pg.Print(len(image_clusters), "images clusters were found")
     else:
         pg.Print("No image clusters were found")
-    output_directory = Path(output_directory)
+    output_directory = Path(parameters.output_directory)
     if not output_directory.exists():
         output_directory.mkdir()
     for i, cluster in enumerate(image_clusters):
-        if not image_layers:
+        if not parameters.save_as_layers:
             pg.Print(f"processing cluster {i + 1}...")
             imp.grid_from_4x4_imageset(cluster) \
                 .save(output_directory / f"{cluster[0].image_id[:-8]}.png", format="PNG")
@@ -44,7 +43,7 @@ def save_clusters(parameters: Parameters):
         pg.Print(f"saved cluster {i + 1} to {output_directory.as_posix()}")
 
 
-if __name__ == "__main__":
+def main_gui():
     params = Parameters()
     layers = [[pg.Text("Choose output folder"), pg.FolderBrowse(button_text="Browse", key="output_path")],
               [pg.Text("Sol num."), pg.InputText(key="sol", default_text=None)],
@@ -53,7 +52,7 @@ if __name__ == "__main__":
     window = pg.Window("Perseverance rover image grid constructor", layers)
     while True:
         event, values = window.read()
-        if event == pg.WIN_CLOSED or event == 'Cancel':
+        if event in [pg.WIN_CLOSED, 'Cancel']:
             break
         elif event == "OK":
             pg.Print("Processing images. This can take a few minutes")
@@ -61,7 +60,8 @@ if __name__ == "__main__":
             params.output_directory = values["output_path"]
             params.save_as_layers = values["layers"]
             save_clusters(params)
-        else:
-            pass
     window.close()
 
+
+if __name__ == "__main__":
+    main_gui()
