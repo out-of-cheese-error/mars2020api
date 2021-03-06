@@ -42,10 +42,10 @@ images = [
 
 We used Photoshop's Photomerge algorithm (had to subsample to a 100 images to keep Photoshop from crashing) to get this absolute beauty:
 
-![collage EDL_RDCAM Filter E](./images/collage_EDL_RDCAM_E.png)
+[comment]: <> (![collage EDL_RDCAM Filter E]&#40;./images/collage_EDL_RDCAM_E.png&#41;)
 
 
-And similarly for `filter_number = F`:
+[comment]: <> (And similarly for `filter_number = F`:)
 
 ![collage EDL_RDCAM Filter F](./images/collage_EDL_RDCAM_F.png)
 <!-- #endregion -->
