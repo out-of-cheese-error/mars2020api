@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 from scipy.ndimage.filters import convolve
-from mars2020 import mars2020api as mapi
+from mars2020 import image_api as mapi
 import typing as ty
 
 

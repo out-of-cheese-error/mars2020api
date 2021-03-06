@@ -18,13 +18,13 @@ Some imports and a helper function to plot a grid of images:
 import PIL
 import numpy as np
 
-from mars2020 import mars2020api
+from mars2020 import image_api
 ```
 
 Fetch all of NASA's Mars data (this just gets all the image metadata, the actual images are downloaded lazily when requested)
 
 ```python
-all_data = mars2020api.ImageDataCollection.fetch_all_mars2020_imagedata()
+all_data = image_api.ImageDataCollection.fetch_all_mars2020_imagedata()
 ```
 
 ## Collage

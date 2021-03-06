@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from mars2020 import mars2020api as mapi
+from mars2020 import image_api as mapi
 from mars2020 import image_processing as imp
 import typing as ty
 from pathlib import Path
