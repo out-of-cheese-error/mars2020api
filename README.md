@@ -116,6 +116,14 @@ An example of what that looks like:
 
 ![RGB image example](./images/m6.png)
 
+# Demosaicing/DeBayering
+
+* Implemented! example soon
+
+# Grid images
+
+* Implemented! example soon
+* GUI app in releases to form grid images with debayering
 
 See the rest, as well as high-res versions of all of the above in [this Flickr album](https://flic.kr/s/aHsmUybm5N)
 
