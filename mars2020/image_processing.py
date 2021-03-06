@@ -73,14 +73,14 @@ def grid_from_imageset(images: ty.List[mapi.ImageData]) -> Image:
         im.order = int(im.image_id.split("_")[-2])
     images = sorted(images, key=lambda x: x.order)
     image_frames = [np.array(x.image_data) for x in images]
-    d1 = min(x.shape[0] for x in image_frames)
-    d2 = min(x.shape[1] for x in image_frames)
+    d1 = min(x.shape[0] for x in image_frames) - 2
+    d2 = min(x.shape[1] for x in image_frames) - 2
     size = int(np.sqrt(len(images)))
     grid_image = np.zeros((d1 * size, d2 * size, 4), dtype="uint8")
     for i in range(size):
         for j in range(size):
             current = image_frames[i * size + j]
-            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[:d1, :d2]
+            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[1:d1-1, 1:d2-1]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
     return Image.fromarray(grid_image)
 
@@ -90,15 +90,15 @@ def grid_from_imageset_with_layers(images: ty.List[mapi.ImageData]):
         im.order = int(im.image_id.split("_")[-2])
     images = sorted(images, key=lambda x: x.order)
     image_frames = [np.array(x.image_data) for x in images]
-    d1 = min(x.shape[0] for x in image_frames)
-    d2 = min(x.shape[1] for x in image_frames)
+    d1 = min(x.shape[0] for x in image_frames) - 2
+    d2 = min(x.shape[1] for x in image_frames) - 2
     layers = []
     size = int(np.sqrt(len(images)))
     for i in range(size):
         for j in range(size):
             grid_image = np.zeros((d1 * size, d2 * size, 4), dtype="uint8")
             current = image_frames[i * size + j]
-            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[:d1, :d2]
+            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[1:d1-1, 1:d2-1]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
             layers.append(Image.fromarray(grid_image))
     return layers
