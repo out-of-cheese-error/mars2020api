@@ -80,7 +80,7 @@ def grid_from_imageset(images: ty.List[mapi.ImageData]) -> Image:
     for i in range(size):
         for j in range(size):
             current = image_frames[i * size + j]
-            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[1:d1-1, 1:d2-1]
+            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[1:d1+1, 1:d2+1]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
     return Image.fromarray(grid_image)
 
@@ -98,7 +98,7 @@ def grid_from_imageset_with_layers(images: ty.List[mapi.ImageData]):
         for j in range(size):
             grid_image = np.zeros((d1 * size, d2 * size, 4), dtype="uint8")
             current = image_frames[i * size + j]
-            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[1:d1-1, 1:d2-1]
+            grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), :3] = current[1:d1+1, 1:d2+1]
             grid_image[d1 * i: d1 * (i + 1), d2 * j: d2 * (j + 1), -1] = 255
             layers.append(Image.fromarray(grid_image))
     return layers
