@@ -130,7 +130,7 @@ class JezeroMap:
         return JezeroMap(web_map)
 
     def center_and_return_map_image(self, points: ty.List[Coordinate],
-                                    gap: float = .01,
+                                    gap: float = .0005,
                                     x: int = 500) -> ty.Tuple[np.ndarray, BBox, ty.Tuple[int, int]]:
         max_lon: float = max(x[0] for x in points) + gap
         min_lon: float = min(x[0] for x in points) - gap
@@ -138,8 +138,8 @@ class JezeroMap:
         min_lat: float = min(x[1] for x in points) - gap
         y = ((max_lat - min_lat) / (max_lon - min_lon)) * x
         bbox: BBox = (min_lon, min_lat, max_lon, max_lat)
-        img = self.map.getmap(layers=['HiRISE-hsv'],
-                              srs='EPSG:49901',
+        img = self.map.getmap(layers=['Jezero Landing Site'],
+                              srs='EPSG:4326',
                               bbox=bbox,
                               size=(x, y),
                               format='image/png',
@@ -147,4 +147,20 @@ class JezeroMap:
         with open("temp_image.png", "wb") as temp_file:
             temp_file.write(img.read())
         map_image = Image.open("temp_image.png")
-        return np.array(map_image), bbox, (x, y)
+        return np.array(map_image), bbox, (int(y), int(x))
+
+    @staticmethod
+    def get_coordinate_functions(image_size: ty.Tuple[int, int],
+                                 image_bbox: BBox) -> ty.Tuple[ty.Callable, ty.Callable]:
+
+        def lin_func_x(x_min, x_max):
+            return lambda x: image_size[1] - ((image_size[1] / (x_max - x_min)) * (x - x_min))
+
+        def lin_func_y(x_min, x_max):
+            return lambda x: (image_size[0] / (x_max - x_min)) * (x - x_min)
+
+        normalize_long = lin_func_x(image_bbox[2], image_bbox[0])
+        normalize_lat = lin_func_y(image_bbox[3], image_bbox[1])
+
+        return normalize_long, normalize_lat
+
