@@ -3,9 +3,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 import requests as rq
+from owslib.wms import WebMapService
+from owslib.map import wms111, wms130
+import numpy as np
+from PIL import Image
 
-
-Coordinate = ty.Tuple[float, float]
+Longitude = float
+Latitude = float
+Coordinate = ty.Tuple[Longitude, Latitude]
 
 
 @dataclass
@@ -110,3 +115,36 @@ Paths = ty.Iterable[Path]
 def load_paths() -> Paths:
     paths = rq.get("https://mars.nasa.gov/mmgis-maps/M20/Layers/json/M20_traverse.json").json()["features"]
     return (Path.from_path_dict(path) for path in paths)
+
+
+BBox = ty.Tuple[float, float, float, float]
+
+
+@dataclass
+class JezeroMap:
+    map: ty.Union[wms111.WebMapService_1_1_1, wms130.WebMapService_1_3_0]
+
+    @classmethod
+    def from_wms_url(cls, url: str = "https://maps.planet.fu-berlin.de/jez-bin/wms") -> "JezeroMap":
+        web_map = WebMapService(url)
+        return JezeroMap(web_map)
+
+    def center_and_return_map_image(self, points: ty.List[Coordinate],
+                                    gap: float = .01,
+                                    x: int = 500) -> ty.Tuple[np.ndarray, BBox, ty.Tuple[int, int]]:
+        max_lon: float = max(x[0] for x in points) + gap
+        min_lon: float = min(x[0] for x in points) - gap
+        max_lat: float = max(x[1] for x in points) + gap
+        min_lat: float = min(x[1] for x in points) - gap
+        y = ((max_lat - min_lat) / (max_lon - min_lon)) * x
+        bbox: BBox = (min_lon, min_lat, max_lon, max_lat)
+        img = self.map.getmap(layers=['HiRISE-hsv'],
+                              srs='EPSG:49901',
+                              bbox=bbox,
+                              size=(x, y),
+                              format='image/png',
+                              transparent=True)
+        with open("temp_image.png", "wb") as temp_file:
+            temp_file.write(img.read())
+        map_image = Image.open("temp_image.png")
+        return np.array(map_image), bbox, (x, y)

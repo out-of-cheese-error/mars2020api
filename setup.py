@@ -7,4 +7,5 @@ setup(name='mars2020',
       author='out-of-cheese-error',
       scripts=["tools/construct_grid_image"],
       packages=['mars2020'],
-      install_requires=["numpy", "requests", "pillow", "scipy", "PySimpleGUI"])
+      install_requires=["numpy", "requests", "pillow", "scipy",
+                        "PySimpleGUI", "OWSLib"])
