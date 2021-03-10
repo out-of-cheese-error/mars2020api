@@ -81,7 +81,7 @@ Here are some results from Photomerge!
 A bunch of the cameras took separate R, G, and B channels for each image. We matched these together with the `camera_vector` information and composited them.
 
 ```python
-def match_rgb(r_image: mars2020api.ImageData, g_images: [mars2020api.ImageData], b_images: [mars2020api.ImageData]):
+def match_rgb(r_image: image_api.ImageData, g_images: [image_api.ImageData], b_images: [image_api.ImageData]):
     vector = r_image.camera_type.camera_vector
     g_image = [x for x in g_images if x.camera_type.camera_vector == vector]
     if len(g_image) == 0:
