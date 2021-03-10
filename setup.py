@@ -8,4 +8,4 @@ setup(name='mars2020',
       scripts=["tools/construct_grid_image"],
       packages=['mars2020'],
       install_requires=["numpy", "requests", "pillow", "scipy",
-                        "PySimpleGUI", "OWSLib"])
+                        "PySimpleGUI", "OWSLib", "matplotlib"])
